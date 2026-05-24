@@ -1,0 +1,186 @@
+#################################################
+# Porgrama que dada uma matriz de elementos aleatórios
+# podemos manipular suas linhas e colunas
+#rotacionando a matriz no sentido horário,
+#transpões pela diagonal principal e secundária
+#E reflete horizontalmente e verticalmente
+#################################################
+
+def rodamatriz(a):
+    """
+    Rotaciona a matriz no sentido horário.
+    :param a: Matriz inicial
+    :return: Matriz rotacionada
+    """
+    c = []#Contruindoa matriz auxiliar
+    b = [0]*4#Contruindoa matriz auxiliar
+    for i in range(4):#Contruindoa matriz auxiliar
+        c.append(b[:])#Contruindoa matriz auxiliar
+    a.reverse()#inverte a matriz "a" verticalmete,
+
+    for k in range(len(c)):
+        for j in range(len(c)):
+            c[k][j] = a[j][k] #"copia" pra matriz auxiliar os elemtos da matriz a
+                              # de maneira a pegar os elementos que estão nas colunas de "a"
+                              # e colar nas linha de "c".
+    return c
+
+def transp1 (a):
+    """
+    Transpoem a matriz em relação a diagonal principal
+    :param a: Matriz inicial
+    :return: Matriz transposta
+    """
+    c = []#Contruindoa matriz auxiliar
+    b = [0] * 4#Contruindoa matriz auxiliar
+    for i in range(4):#Contruindoa matriz auxiliar
+        c.append(b[:])#Contruindoa matriz auxiliar
+
+    for k in range(len(c)):
+        for j in range(len(c)):
+
+            c[k][j] = a[j][k]#"copia" pra matriz auxiliar os elemtos da matriz a
+                              # de maneira a pegar os elementos que estão nas colunas de "a"
+                              # e colar nas linha de "c".
+    return c
+
+def invV(a):
+    """
+    Inverte a matriz na vertical
+    :param a: Matriz inicial
+    :return: Matriz invertida
+    """
+    a.reverse() #inverte a matriz verticalmente
+    return a
+
+def invH (a):
+    """
+    Inverte a matriz horizontalmente.
+    :param a: Matriz inicial
+    :return: Matriz invertida
+    """
+    c =  rodamatriz(a)#roda a matriz uma vez pra direita
+    c = rodamatriz(c)#roda a matriz pela segunda vez pra direita
+    c.reverse()# inverte a matriz verticalmente
+    return c
+
+def transp2 (a):
+    """
+    Transpoem a matriz a em relação a diagonal secundaria.
+    :param a: Matriz inicial
+    :return: matriz transposta
+    """
+
+    a =  invH(a) #Inverte a matriz horizontalmente (a diagonal secundária se torna a principal)
+    a = transp1(a) #Transpõem a matriz pela diagonal principal(transpor a matriz não altera a sua diagonal)
+    a =  invH(a) # Inverte horizontalmente a matriz novamente para voltar a diagonal principal pra secundária
+    return a
+
+def main():
+    """
+    Função principal
+    :return: nada
+    """
+
+    N =  int(input("Digite o o invariante do quadrado magico: "))# Pergunta o invariante ao usuario(a)
+    m =  N-21 #calcula m
+    a = [[11,8,m,2],[m+1,1,12,7],[4,m+2,6,9],[5,10,3,m+3]] # constroi o quadrado magico
+    print("\n")
+    for i in range(len(a)):
+        print(a[i]) # imprime o quadrado magico
+    print("\n")
+    r = int(input("""Escolha uma operação: 
+    0-sair
+    1-Girar para a direita
+    2-Transpor pela diagonal principal
+    3-Transpor pela diagonal secundaria
+    4-Refletir horizontalmente
+    5-Refletir verticalmente
+    """))  # Opções que o usuário pode escolher fazer com o quadrado magico
+
+    if r == 0: # Se o usuário escolher 0 logo de primeira
+        print("\n")
+        print("Good bye!! :)")
+
+    if r!=0: # todas as opções diferentes de 0 logo de inicio
+        while r !=0 : # looping de opções até o 0 ser selecionado
+            if r == 1:
+                a = rodamatriz(a)
+                print("\n")
+                for e in range(len(a)):
+                    print(a[e])
+                print("\n")
+                r = int(input("""Escolha uma operação:
+                    0-sair
+                    1-Girar para a direita
+                    2-Transpor pela diagonal principal
+                    3-Transpor pela diagonal secundaria
+                    4-Refletir horizontalmente
+                    5-Refletir verticalmente
+                    """))
+
+            if r == 2:
+                a = transp1(a)
+                print("\n")
+                for j in range(len(a)):
+                    print(a[j])
+                print("\n")
+                r = int(input("""Escolha uma operação:
+                    0-sair
+                    1-Girar para a direita
+                    2-Transpor pela diagonal principal
+                    3-Transpor pela diagonal secundaria
+                    4-Refletir horizontalmente
+                    5-Refletir verticalmente
+                    """))
+
+            if r == 3:
+                a =  transp2(a)
+                print("\n")
+                for j in range(len(a)):
+                    print(a[j])
+                print("\n")
+                r = int(input("""Escolha uma operação:
+                    0-sair
+                    1-Girar para a direita
+                    2-Transpor pela diagonal principal
+                    3-Transpor pela diagonal secundaria
+                    4-Refletir horizontalmente
+                    5-Refletir verticalmente
+                    """))
+
+            if r == 4:
+                a = invH(a)
+                print("\n")
+                for j in range(len(a)):
+                    print(a[j])
+                print("\n")
+                r = int(input("""Escolha uma operação:
+                    0-sair
+                    1-Girar para a direita
+                    2-Transpor pela diagonal principal
+                    3-Transpor pela diagonal secundaria
+                    4-Refletir horizontalmente
+                    5-Refletir verticalmente
+                    """))
+
+            if r == 5:
+                a = invV(a)
+                print("\n")
+                for j in range(len(a)):
+                    print(a[j])
+                print("\n")
+                r = int(input("""Escolha uma operação:
+                    0-sair
+                    1-Girar para a direita
+                    2-Transpor pela diagonal principal
+                    3-Transpor pela diagonal secundaria
+                    4-Refletir horizontalmente
+                    5-Refletir verticalmente
+                    """))
+
+            if r == 0: #opção que encerra a operação
+                print("\n")
+                print("Good bye!! :)")
+
+main() # chama a função principal
