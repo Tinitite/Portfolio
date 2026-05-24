@@ -1,5 +1,5 @@
 #################################################
-# Porgrama que dada uma matriz de elementos aleatórios
+# Programa que dada uma matriz de elementos aleatórios
 # podemos manipular suas linhas e colunas
 #rotacionando a matriz no sentido horário,
 #transpões pela diagonal principal e secundária
