@@ -1,0 +1,120 @@
+import math # Importa o módulo math para funções matemáticas como logaritmo
+
+def prod_esc(X,Y,P):
+    e = 0 # Inicializa a variável 'e' para acumular o produto escalar ponderado
+    for i in range(len(X)): # Itera sobre os elementos das listas X, Y e P
+        e = e + P[i]*X[i]*Y[i] # Calcula o produto de P[i]*X[i]*Y[i] e acumula em 'e'
+    return e # Retorna o produto escalar ponderado
+
+def exp_element (X,b):
+    aux = [0]*len(X) # Cria uma lista 'aux' do mesmo tamanho de 'X', inicializada com zeros
+    for j in range(len(X)): # Itera sobre os elementos da lista 'X'
+        aux[j] = X[j]**b # Calcula X[j] elevado à potência 'b' e armazena em 'aux'
+    return aux # Retorna a lista com os elementos elevados à potência
+
+def ln (X):
+    aux = [0] * len(X) # Cria uma lista 'aux' do mesmo tamanho de 'X', inicializada com zeros
+    for i in range(len(X)): # Itera sobre os elementos da lista 'X'
+        aux[i] = math.log(X[i]) # Calcula o logaritmo natural de X[i] e armazena em 'aux'
+    return aux # Retorna a lista com os logaritmos naturais
+
+def sist(X,Y, U, P,n):
+    a = [] # Inicializa uma lista vazia 'a' para armazenar as linhas da matriz do sistema
+    # 'e' armazena os coeficientes para o sistema de equações normais de regressão quadrática ponderada
+    e = [prod_esc(U, U, U), prod_esc(U, X, U), prod_esc(U, exp_element(X,2), U), prod_esc(U, Y, U),
+         prod_esc(X, U, U), prod_esc(X, X, U), prod_esc(X, exp_element(X,2), U), prod_esc(X,Y, U),
+         prod_esc(exp_element(X, 2), U, U), prod_esc(exp_element(X,2), X, U),
+         prod_esc(exp_element(X,2), exp_element(X,2), U), prod_esc(exp_element(X,2), Y, U)]
+
+    b = [0]*(n+1) # Cria uma lista 'b' de tamanho n+1, inicializada com zeros (usada como base para as linhas)
+    for i in range(len(b)-1): # Itera para criar 'n' linhas (n=3 para regressão quadrática)
+        a.append(b[:]) # Adiciona uma cópia da lista 'b' como uma nova linha em 'a'
+    for j in range(len(b)): # Preenche a primeira linha da matriz 'a' com os primeiros 'n+1' valores de 'e'
+        a[0][j] = e[j]
+
+    for k in range(len(b)): # Preenche a segunda linha da matriz 'a' com os valores subsequentes de 'e'
+        a[1][k] = e[k+4]
+
+    for l in range(len(b)): # Preenche a terceira linha da matriz 'a' com os valores restantes de 'e'
+        a[2][l] = e[l+8]
+    return a # Retorna a matriz do sistema de equações
+
+def res_sist(s):
+    aux = s[:] # Cria uma cópia da matriz do sistema 's'
+    aux[0] = s[2] # Troca a primeira linha com a terceira (para pivoteamento parcial)
+    aux[2] = s[0]
+    t1 = aux[1][0]/aux[0][0] # Calcula o fator para zerar o primeiro elemento da segunda linha
+    t2 = aux[2][0]/aux[0][0] # Calcula o fator para zerar o primeiro elemento da terceira linha
+    't = aux[1][0]/aux[0][0]' # Comentário de linha (string não atribuída)
+
+    aux2 = aux[:] # Cria uma cópia de 'aux'
+    for j in range(len(aux[1])): # Itera sobre os elementos das linhas
+        aux2[1][j] = aux[1][j] - aux[0][j]*t1 # Zera o primeiro elemento da segunda linha
+        aux2[2][j] = aux[2][j] - aux[0][j]*t2 # Zera o primeiro elemento da terceira linha
+    aux2[1][0] = t1 # Armazena o fator t1 (para depuração ou referência)
+    aux2[2][0] = t2 # Armazena o fator t2 (para depuração ou referência)
+
+    aux3 = aux2[:] # Cria uma cópia de 'aux2'
+    aux2[1] = aux3[2] # Troca a segunda linha com a terceira novamente
+    aux2[2] = aux3[1]
+
+    t3 = aux2[2][1]/aux2[1][1] # Calcula o fator para zerar o segundo elemento da terceira linha
+    aux4 = aux2[:] # Cria uma cópia de 'aux2'
+    for l in range(len(aux2[1])): # Itera sobre os elementos da linha
+        aux4[2][l] = aux2[2][l] - aux2[1][l]*t3 # Zera o segundo elemento da terceira linha
+    aux4[2][1] = t3 # Armazena o fator t3
+
+    # Resolução por substituição retroativa (back-substitution)
+    c = aux4[2][3]/aux4[2][2] # Calcula o coeficiente 'c'
+    print("\n c = ", c) # Imprime o valor de 'c'
+
+    b = (aux4[1][3]-aux4[1][2]*c)/aux4[1][1] # Calcula o coeficiente 'b'
+    print("\n b = ", b) # Imprime o valor de 'b'
+
+    a = (aux4[0][3] - aux4[0][2]*c - aux4[0][1]*b)/aux4[0][0] # Calcula o coeficiente 'a'
+    return a # Retorna o coeficiente 'a'
+
+def Qf (X, Y, a, b, c, P):
+    Q = 0 # Inicializa a variável 'Q' para acumular a soma dos quadrados dos resíduos ponderados
+    t = 1.9 # Variável 't' não utilizada na função (provavelmente resquício de outro código)
+    for i in range(len(X)): # Itera sobre os pontos de dados
+        f = a + b*X[i] + c*X[i]**2 # Calcula o valor predito 'f' usando a equação quadrática
+        Q = Q + P[i]*((Y[i] - f)**2) # Soma o quadrado do resíduo (Y[i] - f) multiplicado pelo peso P[i]
+    return Q # Retorna a soma dos quadrados dos resíduos ponderados
+
+def Qy (Y, P):
+    sum = 0 # Inicializa a soma dos produtos Y[i]*P[i]
+    peso = 0 # Inicializa a soma dos pesos P[i]
+    Q = 0 # Inicializa a variável 'Q' para acumular a soma total dos quadrados ponderados
+    for i in range(len(Y)): # Itera sobre os valores de Y
+        sum = sum + P[i]*Y[i] # Soma P[i]*Y[i]
+        peso = peso + P[i] # Soma os pesos
+    y_bar = sum/peso # Calcula a média ponderada de Y
+
+    for j in range(len(Y)): # Itera sobre os valores de Y novamente
+        Q = Q + P[j] * ((Y[j] - y_bar) ** 2) # Soma o quadrado da diferença de Y[j] para a média ponderada, multiplicado pelo peso P[j]
+
+    return Q # Retorna a soma total dos quadrados ponderados
+
+# Dados de entrada para a regressão
+X = [1.13, 1.54, 1.7, 1.94, 1.95, 2.68]
+Y = [2.07, 2.58, 3.48, 4.15, 4.07, 5.02]
+U = [1, 1, 1, 1, 1, 1] # Vetor de 'uns' usado para termos constantes e somatórios ponderados
+P = [1, 2, 3, 4, 5, 6] # Pesos para cada ponto de dado
+
+s = sist(X,Y,U,P,3) # Constrói a matriz do sistema de equações normais (n=3 para quadrática)
+for i in range(len(s)): # Itera e imprime cada linha da matriz do sistema
+    print(s[i])
+
+a = res_sist(s) # Resolve o sistema de equações e obtém o coeficiente 'a' (também imprime 'b' e 'c')
+b = 4.437783106560542 # Coeficiente 'b' hardcoded (o valor impresso por res_sist é o correto)
+c = -0.6280440581260922 # Coeficiente 'c' hardcoded (o valor impresso por res_sist é o correto)
+'''print("\n")
+for j in range(len(a)):''' # Bloco de comentário multilinhas (não ativo)
+print("\n a = ", a) # Imprime o coeficiente 'a' (retornado por res_sist)
+
+Q = Qf(X, Y, a, b, c,  U)/Qy(Y, U) # Calcula a razão Q(f)/Q(Y_bar), que é 1 - R^2
+R = 1 - Q # Calcula o coeficiente de determinação (R-quadrado)
+
+print("Q(f)/Q(Y_bar) = ", Q)
+print("\n R^2 = ", R)
