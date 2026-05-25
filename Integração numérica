@@ -1,0 +1,151 @@
+import numpy as np # Importa a biblioteca NumPy para operações numéricas eficientes
+import math # Importa o módulo math para funções matemáticas
+import random # Importa o módulo random para geração de números aleatórios
+
+def f(x):
+  # Define uma semente para o gerador de números aleatórios de NumPy para reprodutibilidade
+  np.random.seed(19760678)
+  # Inicializa parâmetros aleatórios para a função
+  A = np.random.rand()*10 - 5
+  B = np.random.rand()*3 + 3
+  omega = np.random.rand()*0.4 + 0.8
+  m = np.random.rand() + 0.5
+  w = 0 # Valor inicial para a iteração
+  dif = 1 # Diferença inicial para o critério de parada
+  i = 0 # Contador de iterações
+  # Loop de iteração (método de Newton-Raphson-like para resolver implicitamente w)
+  while (dif > 5e-15) and (i < 20):
+    w_ant = w # Guarda o valor anterior de w
+    # Calcula o novo valor de w usando a fórmula iterativa
+    w = w - (A+B*np.sin(omega*x)+(m+1)*w+0.9*np.sin(w))/(m+1+0.9*np.cos(w))
+    dif = np.abs(w - w_ant) # Calcula a diferença absoluta entre o w atual e o anterior
+    i = i + 1 # Incrementa o contador de iterações
+  return w # Retorna o valor de w convergido
+
+def est_4a_derivada(funcao,x,h):
+  # Calcula os valores da função em pontos específicos para a fórmula da 4ª derivada
+  c0 = funcao(x+2*h)
+  c1 = funcao(x+h)
+  c2 = funcao(x)
+  c3 = funcao(x-h)
+  c4 = funcao(x-2*h)
+  # Estima a 4ª derivada usando a fórmula de diferenças centrais finitas
+  est = (c0 - 4*c1 + 6*c2 - 4*c3 + c4)/(h**4)
+  return est # Retorna o valor estimado da 4ª derivada
+
+def list_interv (I_0, I_f, n):
+    # Calcula o tamanho de cada subintervalo
+    div = abs(I_f - I_0) / n
+    a = [] # Inicializa uma lista vazia para armazenar os pontos
+    for i in range(n + 1): # Itera para gerar os pontos dos subintervalos e seus pontos médios
+        b = I_0 + i * div # Ponto inicial ou final de um subintervalo
+        a.append(b) # Adiciona o ponto à lista
+        if b < I_f: # Se não for o último ponto do intervalo principal
+            c = I_0 + (i + 1) * div # Próximo ponto final do subintervalo
+            aux = (b + c) / 2 # Calcula o ponto médio do subintervalo
+            a.append(aux) # Adiciona o ponto médio à lista
+    return a # Retorna a lista de pontos, incluindo os pontos médios
+
+
+def calcu_func(interv):
+    m = [] # Inicializa uma lista vazia para armazenar os resultados da função
+    for i in range(len(interv)): # Itera sobre cada ponto na lista de intervalos
+        aux = f(interv[i]) # Calcula o valor da função 'f' para o ponto atual
+        m.append(aux) # Adiciona o resultado à lista
+    return m # Retorna a lista com os valores da função calculados
+
+def simpson (f_vals, I_0, I_f, n):
+    soma = 0 # Inicializa a soma para a regra de Simpson
+    # f_vals é uma lista de valores da função f(x) calculados nos pontos gerados por list_interv.
+    # f_x contém os valores da função nos pontos iniciais e finais dos subintervalos (índices pares)
+    f_x = f_vals[::2]
+    # f_m contém os valores da função nos pontos médios dos subintervalos (índices ímpares)
+    f_m = f_vals[1::2]
+    for i in range(n): # Itera sobre os 'n' subintervalos
+        # Aplica a fórmula de Simpson 1/3 para cada par de subintervalos (2n pontos)
+        # A fórmula é h/3 * (f(x_i) + 4f(x_i+h) + f(x_i+2h)), onde x_i+h é o ponto médio
+        soma = soma + f_x[i] + 4 * f_m[i] + f_x[i+1] # Soma os termos para a integral
+    S = soma*(I_f - I_0)/(6*n) # Multiplica a soma pelo fator de escala da regra de Simpson
+    return S # Retorna o valor da integral aproximada pela regra de Simpson
+
+def trapezio (f_vals, I_0, I_f):
+    soma = 0 # Inicializa a soma para a regra do trapézio
+    n = len(f_vals) - 1 # Número de subintervalos (total de pontos - 1)
+    for i in range(n): # Itera sobre os subintervalos
+        # Aplica a fórmula da regra do trapézio: h/2 * (f(x_i) + f(x_i+1))
+        soma = soma + f_vals[i] + f_vals[i+1] # Soma os valores da função nos extremos do subintervalo
+    T = soma*(I_f - I_0)/(2*n) # Multiplica a soma pelo fator de escala da regra do trapézio
+    return T # Retorna o valor da integral aproximada pela regra do trapézio
+
+def max_abs (L):
+    m = 0 # Inicializa a variável para o valor máximo absoluto
+    for i in range(len(L)): # Itera sobre cada ponto na lista L
+        # Estima a 4ª derivada da função 'f' no ponto atual com um pequeno 'h'
+        aux = abs(est_4a_derivada(f, L[i], 0.005))
+        if aux > m: # Se a derivada estimada for maior que o máximo atual
+            m = aux # Atualiza o valor máximo
+    return m # Retorna o valor máximo absoluto da 4ª derivada
+
+def prod_esc(X,Y,P):
+    e = 0 # Inicializa a variável 'e' para acumular o produto escalar ponderado
+    for i in range(len(X)): # Itera sobre os elementos das listas X, Y e P
+        e = e + P[i]*X[i]*Y[i] # Calcula o produto de P[i]*X[i]*Y[i] e acumula em 'e'
+    return e # Retorna o produto escalar ponderado (essa função não é usada no fluxo principal de integração aqui)
+
+def S_n (I_0, I_f, N):
+    L_n = [] # Lista para armazenar os pontos dos intervalos para cada N
+    F = [] # Lista para armazenar os valores da função para cada conjunto de pontos
+    S = [] # Lista para armazenar os resultados da regra de Simpson para cada N
+    for i in range(len(N)): # Itera sobre diferentes números de subintervalos 'N'
+        # Gera a lista de pontos para o número de subintervalos N[i]
+        L_n.append(list_interv(I_0, I_f, N[i]))
+        # Calcula os valores da função 'f' para os pontos gerados
+        F.append(calcu_func(L_n[i]))
+        # Calcula a integral usando a regra de Simpson para os valores da função e N[i]
+        S.append(simpson(F[i], I_0, I_f, N[i]))
+    print("\n L_n = ", L_n, "\n F_n = ", F) # Imprime as listas de pontos e valores da função (debug)
+
+    return S # Retorna a lista de integrais calculadas por Simpson
+
+# --- Bloco principal de execução ---
+
+# Define os limites do intervalo de integração
+I_0 = -2.6
+I_f = 2.1
+
+# Gera pontos para 4 subintervalos usando list_interv
+L = list_interv(I_0, I_f, 4)
+
+print("Pontos do intervalo: ", L)
+
+# Calcula os valores da função 'f' nesses pontos
+p_1 = calcu_func(L)
+# Calcula a integral usando a regra de Simpson com 4 subintervalos
+S_1 = simpson(p_1, I_0, I_f, 4)
+# Calcula a integral usando a regra do trapézio com os mesmos pontos (len(L)-1 subintervalos)
+T = trapezio(p_1, I_0, I_f)
+print("\n Simpson = ", S_1)
+
+print("\n Trapezio = ", T)
+
+# Gera uma lista de pontos com um grande número de subintervalos (10000) para uma "integral exata"
+L_2 = list_interv(I_0, I_f, 10000)
+
+# Calcula os valores da função 'f' nesses muitos pontos
+p_2 = calcu_func(L_2)
+# Calcula a integral usando Simpson com 10000 subintervalos para obter uma "integral exata"
+S_0 = simpson(p_2, I_0, I_f, 10000)
+print("\n Integral exata = ", S_0)
+
+# Calcula o erro absoluto da regra de Simpson (E_S) e do Trapézio (E_T) em relação à integral "exata"
+E_S = abs(S_0 - S_1)
+E_T = abs(S_0 - T)
+print("\n E_S = ", E_S, "\n E_T = ", E_T)
+
+# Calcula constantes C_S e C_T para verificar a ordem de convergência
+# (Erro de Simpson é proporcional a h^4, Erro de Trapézio é proporcional a h^2)
+# Para Simpson, h = (I_f - I_0) / (2*n_simpson_rule_segments) -- o 4 vem do n da regra composta, não h^4
+# Aqui 4 é o número de subintervalos usados em S_1, então está relacionado com 1/n^4 ou h^4
+C_S = E_S * (4)**4 # Multiplica o erro de Simpson por n^4 (onde n é o número de subintervalos para S_1)
+C_T = E_T * (len(L) - 1)**2 # Multiplica o erro de Trapézio por n^2 (onde n é o número de subintervalos para T)
+print("\n C_S = ", C_S, "\n C_T = ", C_T)
