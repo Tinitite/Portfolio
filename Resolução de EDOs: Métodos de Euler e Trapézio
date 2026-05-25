@@ -1,0 +1,112 @@
+# Definição do sistema de Equações Diferenciais Ordinárias (EDO).
+# x' e y' representam as derivadas de x e y em relação a t.
+# EDO para x: x' = -2 - y - 2*x
+# EDO para y: y' = 1 - y - x - x*y + t*x
+# Condições iniciais fornecidas:
+# t0 (tempo inicial) = -2.0
+# x0 (vetor de estado inicial) = (0.18, 0.28)
+
+
+def f(t, x, y):
+  # Esta função define o lado direito do sistema de EDOs.
+  # Ela recebe o tempo 't' e os valores atuais de 'x' e 'y'.
+  # Retorna um vetor F = [x', y'] contendo as derivadas em t, x, y.
+  F = [
+      -2 - y - 2 * x, # Componente da derivada de x (x')
+      1 - y - x - x * y + t * x # Componente da derivada de y (y')
+  ]
+  return F # Retorna as derivadas como uma lista
+
+# As funções comentadas 'f2', 'euler1', 'euler2' são exemplos ou tentativas anteriores que não estão em uso.
+# Foram mantidas no código original como comentários.
+
+def euler_exp(x_0, t_0, h, n):
+  # Implementa o método de Euler Explícito para resolver o sistema de EDOs.
+  # x_0: vetor de condições iniciais [x(t_0), y(t_0)]
+  # t_0: tempo inicial
+  # h: tamanho do passo (step size)
+  # n: número de passos a serem simulados
+
+  X = [x_0] # Inicializa uma lista com a condição inicial X[0] = x_0
+  for k in range(n):
+    # Loop para calcular 'n' passos de Euler.
+    t = t_0 + k * h # Calcula o tempo atual para este passo
+    F = f(t, X[k][0], X[k][1]) # Avalia o sistema de EDOs no ponto (t, X[k][0], X[k][1])
+
+    # Calcula a próxima aproximação (x_k+1, y_k+1) usando a fórmula de Euler:
+    # x_k+1 = x_k + h * f_x(t_k, x_k, y_k)
+    # y_k+1 = y_k + h * f_y(t_k, x_k, y_k)
+    x_next = [
+        X[k][0] + h * F[0],
+        X[k][1] + h * F[1]
+    ]
+    X.append(x_next) # Adiciona a nova aproximação à lista X
+    print(f"\n X^E_{k} = {X[k]}") # Imprime a aproximação calculada para este passo (X^E_k)
+  return X # Retorna a lista de todas as aproximações calculadas pelo método de Euler
+
+def trap_exp(x_0, t_0, h, n):
+  # Implementa o método do Trapézio Explícito (Heun's method) para resolver o sistema de EDOs.
+  # x_0: vetor de condições iniciais [x(t_0), y(t_0)]
+  # t_0: tempo inicial
+  # h: tamanho do passo (step size)
+  # n: número de passos a serem simulados
+
+  X = [x_0] # Inicializa uma lista com a condição inicial X[0] = x_0
+  for k in range(n):
+    # Loop para calcular 'n' passos do Método do Trapézio.
+    t = t_0 + k * h # Calcula o tempo atual para este passo
+
+    # Passo preditor (semelhante a Euler):
+    # Estima as derivadas no ponto atual (t_k, x_k, y_k)
+    T_1 = f(t, X[k][0], X[k][1])
+
+    # Passo corretor:
+    # Usa as derivadas estimadas para prever o próximo ponto (x_pred, y_pred)
+    x_pred = X[k][0] + h * T_1[0]
+    y_pred = X[k][1] + h * T_1[1]
+
+    # Avalia as derivadas no ponto previsto (t_k+h, x_pred, y_pred)
+    T_2 = f(t + h, x_pred, y_pred)
+
+    # Calcula a próxima aproximação (x_k+1, y_k+1) usando a média das derivadas:
+    # x_k+1 = x_k + h * (f_x(t_k, x_k, y_k) + f_x(t_k+h, x_pred, y_pred)) / 2
+    # y_k+1 = y_k + h * (f_y(t_k, x_k, y_k) + f_y(t_k+h, x_pred, y_pred)) / 2
+    x_next = [
+        X[k][0] + h * (T_1[0] + T_2[0]) / 2,
+        X[k][1] + h * (T_1[1] + T_2[1]) / 2
+    ]
+    X.append(x_next) # Adiciona a nova aproximação à lista X
+    print(f"\n X^T_{k} = {X[k]}") # Imprime a aproximação calculada para este passo (X^T_k)
+  return X # Retorna a lista de todas as aproximações calculadas pelo método do Trapézio
+
+def main():
+  # Função principal que configura e executa os métodos numéricos.
+  h = 0.05 # Define o tamanho do passo para a integração numérica
+  t_0 = -2.0 # Define o tempo inicial
+  x_0 = [0.18, 0.28] # Define as condições iniciais para x e y
+
+  # As variáveis 'x' e 'y' aqui são redundantes, pois x_0 já é um vetor.
+  # x = x_0[0]
+  # y = x_0[1]
+
+  # Executa o método de Euler Explícito para 4 passos
+  x_k = euler_exp(x_0, t_0, h, 4)
+
+  print("\n \n") # Adiciona uma quebra de linha para separar os outputs
+
+  # Executa o método do Trapézio Explícito para 4 passos
+  x_j = trap_exp(x_0, t_0, h, 4)
+
+  # O código comentado abaixo parece ser uma tentativa anterior de implementar Euler
+  # de forma diferente, mas não está em uso.
+  # print("\n x_E = ", x_k)
+  # for k in range(3):
+  #     t = t_0 + k*h
+  #     print("\n x_", k+1, " = ", euler1(x, y, t, h), "\n y_", k+1, " = ", euler2(x, y, t, h))
+  #     aux1 = x
+  #     aux2 = y
+  #     x = euler1(aux1, aux2, t, h)
+  #     y = euler2(aux1, aux2, t, h)
+
+
+main() # Chama a função principal para iniciar a simulação
