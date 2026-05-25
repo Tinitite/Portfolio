@@ -1,0 +1,56 @@
+# Condição inicial para as variáveis x e y do sistema
+X = np.array([1, 1.5])
+
+import numpy as np # Importa a biblioteca NumPy para operações numéricas eficientes
+
+def f(X):
+  # Define o sistema de equações não lineares como um vetor.
+  # X[0] representa a primeira variável (geralmente x) e X[1] a segunda (geralmente y).
+  m = np.array([
+      3.18 * ((X[0])**2.96) + 0.96 * ((X[1])**2.96) - 1, # Primeira equação
+      1.52 * ((X[0])**2.51) + 3.72 * ((X[1])**2.51) - 1  # Segunda equação
+  ])
+
+  return m # Retorna o vetor com os resultados das equações
+
+def Df(X):
+  # Define a matriz Jacobiana (derivadas parciais) do sistema f(X).
+  # Cada linha representa as derivadas de uma equação em relação a X[0] e X[1].
+  m = np.array([
+      [3.18 * 2.96 * ((X[0])**1.96), 0.96 * 2.96 * ((X[1])**1.96)], # Derivadas da primeira equação
+      [1.52 * 2.51 * ((X[0])**1.51), 3.72 * 2.51 * ((X[1])**1.51)]  # Derivadas da segunda equação
+  ])
+
+  return m # Retorna a matriz Jacobiana
+
+def invertematriz(M):
+  # Calcula a inversa de uma matriz M usando a função `linalg.inv` do NumPy.
+  return np.linalg.inv(M)
+
+def newton(X):
+  # Implementa uma única iteração do método de Newton para sistemas não lineares.
+  # A fórmula é X_novo = X_antigo - [Df(X_antigo)]^-1 * f(X_antigo).
+
+  # Calcula o termo [Df(X)]^-1 * f(X)
+  M = np.matmul(invertematriz(Df(X)), f(X))
+  # Atualiza o valor de X
+  x1 = X - M
+
+  return x1 # Retorna o novo valor de X após a iteração
+
+def main():
+  # Define o ponto inicial da iteração (chute inicial para as raízes).
+  X = np.array([1, 1.5])
+  # `aux` armazena o valor anterior de X para verificar a convergência.
+  aux = np.array([0, 0]) # Inicializado com valores diferentes para garantir a primeira iteração
+  i = 0 # Contador de iterações
+
+  # O loop continua enquanto X não convergir (ou seja, X ainda muda significativamente).
+  # A condição de parada é quando X[0] e X[1] não mudam mais (ou mudam muito pouco).
+  while not (np.allclose(X, aux, atol=1e-8)): # Usar np.allclose para comparação de floats
+      aux = X.copy() # Copia o valor atual de X para `aux` antes da atualização
+      X = newton(X) # Realiza uma iteração do método de Newton
+      i += 1 # Incrementa o contador de iterações
+      print(f"\n aux = {aux} \n X_{i} = {X}") # Imprime os valores a cada iteração para acompanhamento
+
+main() # Chama a função principal para iniciar o processo de Newton
